@@ -40,36 +40,49 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
     'EN': {'title': 'GLOBAL SPEED', 'btn': 'START TEST', 'status': 'READY', 'unit': 'Mbps', 'flag': '🇺🇸'},
     'CN': {'title': '全球速度', 'btn': '开始测试', 'status': '准备就绪', 'unit': 'Mbps', 'flag': '🇨🇳'},
     'JP': {'title': 'グローバル速度', 'btn': 'テスト開始', 'status': '準備完了', 'unit': 'Mbps', 'flag': '🇯🇵'},
-    'KR': {'title': '글로벌 속도', 'btn': '테สต์ 시작', 'status': '준비 완료', 'unit': 'Mbps', 'flag': '🇰🇷'},
+    'KR': {'title': '글ือ벌 속도', 'btn': '테스트 시작', 'status': '준비 완료', 'unit': 'Mbps', 'flag': '🇰🇷'},
     'FR': {'title': 'VITESSE GLOBALE', 'btn': 'LANCER', 'status': 'PRÊT', 'unit': 'Mbps', 'flag': '🇫🇷'},
   };
 
+  // --- ส่วนที่แก้ไข: ปรับปรุงระบบวัดความเร็วให้ทำงานได้จริง ---
   Future<void> _startUltraTest() async {
-    setState(() { _isTesting = true; _speed = 0.0; _progress = 0.0; });
+    setState(() { 
+      _isTesting = true; 
+      _speed = 0.0; 
+      _progress = 0.0; 
+    });
 
     try {
       final stopwatch = Stopwatch()..start();
-      final response = await http.get(Uri.parse('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'))
-          .timeout(const Duration(seconds: 12));
+      
+      // ใช้ไฟล์ขนาด 10MB จาก Cloudflare เพื่อให้วัดค่าได้แม่นยำและเห็นตัวเลขวิ่งจริงๆ
+      final response = await http.get(Uri.parse('https://speed.cloudflare.com/__down?bytes=10485760'))
+          .timeout(const Duration(seconds: 30));
+          
       stopwatch.stop();
 
       if (response.statusCode == 200) {
+        // คำนวณความเร็ว: (จำนวนบิต / เวลาที่ใช้เป็นวินาที) / 1 ล้าน = Mbps
         double bits = response.bodyBytes.length * 8.0;
         double time = stopwatch.elapsedMilliseconds / 1000.0;
         double mbps = (bits / time) / (1024 * 1024);
 
+        // สร้างแอนิเมชันให้ตัวเลขและวงกลมวิ่งจนถึงค่าที่วัดได้
         for (int i = 0; i <= 100; i++) {
           await Future.delayed(const Duration(milliseconds: 15));
+          if (!mounted) return;
           setState(() {
             _progress = i / 100;
-            _speed = mbps * (i / 100) * 160; 
+            _speed = mbps * (i / 100); 
           });
         }
       }
     } catch (e) {
       debugPrint("Error: $e");
+      // หากเกิดข้อผิดพลาด ให้ Reset ค่าเป็น 0
+      setState(() => _speed = 0.0);
     } finally {
-      setState(() => _isTesting = false);
+      if (mounted) setState(() => _isTesting = false);
     }
   }
 
@@ -83,14 +96,13 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.only(left: 15, top: 10),
-          // --- โลโก้จิ๋วโชว์ในแอป ---
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.asset(
               'assets/logo.png', 
               errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.redAccent.withOpacity(0.2),
-                child: const Center(child: Text("AR", style: TextStyle(fontSize: 10, color: Colors.redAccent))),
+                color: Colors.cyanAccent.withOpacity(0.1),
+                child: const Center(child: Text("AR", style: TextStyle(fontSize: 10, color: Colors.cyanAccent))),
               ),
             ),
           ),
@@ -128,7 +140,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
               ),
               child: const Text(
                 "VER: ARMisses-ULTRA",
-                style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900),
+                style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.black),
               ),
             ),
             
@@ -149,6 +161,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // แสดงตัวเลขความเร็วทศนิยม 1 ตำแหน่ง
                     Text(_speed.toStringAsFixed(1), style: const TextStyle(fontSize: 85, fontWeight: FontWeight.bold)),
                     Text(lang['unit']!, style: const TextStyle(fontSize: 20, color: Colors.cyanAccent, letterSpacing: 3)),
                   ],
@@ -157,7 +170,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
             ),
             
             const SizedBox(height: 40),
-            Text(lang['status']!, style: const TextStyle(color: Colors.white38, letterSpacing: 2)),
+            Text(_isTesting ? "TESTING..." : lang['status']!, style: const TextStyle(color: Colors.white38, letterSpacing: 2)),
             const Spacer(),
             
             Padding(
