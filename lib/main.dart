@@ -140,7 +140,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
               ),
               child: const Text(
                 "VER: ARMisses-ULTRA",
-                style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.black),
+                style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900),
               ),
             ),
             
@@ -162,7 +162,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // แสดงตัวเลขความเร็วทศนิยม 1 ตำแหน่ง
-                    Text(_speed.toStringAsFixed(1), style: const TextStyle(fontSize: 85, fontWeight: FontWeight.bold)),
+                    Text(_speed.toStringAsFixed(1), style: const TextStyle(fontSize: 85, fontWeight: FontWeight.w900)),
                     Text(lang['unit']!, style: const TextStyle(fontSize: 20, color: Colors.cyanAccent, letterSpacing: 3)),
                   ],
                 ),
@@ -191,7 +191,7 @@ class _GlobalSpeedScreenState extends State<GlobalSpeedScreen> {
                   child: Center(
                     child: Text(
                       _isTesting ? "PROCESSING..." : lang['btn']!,
-                      style: const TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.black, fontSize: 22, fontWeight: FontWeight.w900),
                     ),
                   ),
                 ),
