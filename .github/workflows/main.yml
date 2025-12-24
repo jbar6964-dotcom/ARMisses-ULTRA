@@ -4,11 +4,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # ใช้ v4 แทน v3 ที่โดนยกเลิก
+      # ใช้ v4 แทน v4 ที่โดนยกเลิก
       - uses: actions/checkout@v4
       
-      # ใช้ v2 สำหรับ Flutter action
-      - uses: subosito/flutter-action@v2
+      # ใช้ v4 สำหรับ Flutter action
+      - uses: subosito/flutter-action@v4
         with:
           channel: 'stable'
           
